@@ -1,18 +1,17 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoggerModule } from './logger/logger.module';
-import { LoggerMiddleware } from './logger/logget'
+import { PostgresModule } from './postgres/postgres.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { OldSession } from './models/oldSession';
+import { ActiveSession } from './models/activeSession';
 
 @Module({
-  imports: [LoggerModule],
+  imports: [PostgresModule, TypeOrmModule.forFeature([OldSession, ActiveSession])],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('*');
-  }
+export class AppModule {
+  constructor(private dataSource: DataSource){}
 }
