@@ -16,20 +16,18 @@ export class AppService {
         @InjectRepository(ActiveSession) private activeSessionRepo: Repository<ActiveSession>
     ){}
 
-
     async session(data: any) {
         let requestDTO;
         try {
-            const obj = JSON.parse(data)
-            requestDTO = new RequestDTO(obj.data, obj.serverHash)
+            requestDTO = new RequestDTO(data.data, data.serverHash)
         } catch (e) {
             console.log("--->error! " + e)
-            return new ResponseDTO({}, 400, 'json parse error')
+            return new ResponseDTO({}, 400, 'parse error')
         }
 
         //----------------------------------------------------------
 
-        if (requestDTO.serverHash != '89969458273-the-main-prize-in-the-show-psychics') {
+        if (this.isServerHashBad(requestDTO.serverHash)) {
             return new ResponseDTO({}, 400, 'token is bad')
         }
 
@@ -41,12 +39,10 @@ export class AppService {
             dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
         } catch (e) {
             console.log("error!2 " + e)
-            return new ResponseDTO({}, 400, 'json parse error')
+            return new ResponseDTO({}, 400, 'parse error')
         }
 
         //----------------------------------------------------------
-
-        console.log(dataDTO)
 
         const userId = dataDTO.userId;
         const sessionHash = dataDTO.sessionHash;
@@ -81,7 +77,7 @@ export class AppService {
 
             if (session){
                 if (session.sessionHash = sessionHash){
-                    const updatedSession = this.updateLastActiveDateAndHashBySession(session)
+                    const updatedSession = await this.updateLastActiveDateAndHashBySession(session)
                     const responseDataDto = new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId)
                     return new ResponseDTO(responseDataDto)
                 }
@@ -92,7 +88,7 @@ export class AppService {
             }
             else {
                 //LOG
-                return new ResponseDTO({}, 403, 'Сессий н найдено')
+                return new ResponseDTO({}, 403, 'Сессий не найдено')
             }
         }
     }
@@ -154,11 +150,53 @@ export class AppService {
         return session
     }
 
-    updateLastActiveDateAndHashBySession(session: ActiveSession) : ActiveSession {
+    async updateLastActiveDateAndHashBySession(session: ActiveSession) : Promise<ActiveSession> {
         session.lastActive = Date.now()
         session.sessionHash = this.getRandomMd5Hash()
-        this.activeSessionRepo.save(session)
+        await this.activeSessionRepo.save(session)
         return session
+    }
+
+    isServerHashBad(serverHash: string) : boolean{
+        if (serverHash == '89969458273-the-main-prize-in-the-show-psychics'){
+            return false
+        }
+        return true
+    }
+
+
+    //------------Перенести в другой сервис!!!------------>
+
+    async sessionValidator(data : any){
+        let requestDTO;
+        try {
+            requestDTO = new RequestDTO(data.data, data.serverHash)
+        } catch (e) {
+            console.log("--->error! " + e)
+            return new ResponseDTO({}, 400, 'parse error')
+        }
+
+        if (this.isServerHashBad(requestDTO.serverHash)) {
+            return new ResponseDTO({}, 400, 'token is bad')
+        }
+
+        let dataDTO
+        try {
+            const obj = JSON.parse(JSON.stringify(requestDTO.data))
+            dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
+        } catch (e) {
+            console.log("error!2 " + e)
+            return new ResponseDTO({}, 400, 'parse error')
+        }
+
+        const session = await this.findActiveSessionBySessionId(dataDTO.sessionId)
+
+        if (session && session.sessionHash == dataDTO.sessionHash){
+            return new ResponseDTO({}, 200, 'valid')
+        }
+        else{
+            return new ResponseDTO({}, 403, 'bad')
+        }
     }
     
 }
