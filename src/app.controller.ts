@@ -9,12 +9,12 @@ export class AppController {
 
     @EventPattern('to_session_service')
     async getHello(data: any): Promise<ResponseDTO> {
-        return await this.appService.session(data)
+        return await this.appService.sessionResponser(data)
     }
 
     @EventPattern('validate_session')
     async sessionValidator(data: any): Promise<any> {
-        return await this.appService.sessionValidator(data)
+        return await this.appService.sessionValidatorResponser(data)
     }
 
 }

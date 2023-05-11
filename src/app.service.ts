@@ -16,38 +16,56 @@ export class AppService {
         @InjectRepository(ActiveSession) private activeSessionRepo: Repository<ActiveSession>
     ){}
 
-    async session(data: any) {
+    async sessionResponser(data: any){
+        const startDate = Date.now()
+
+        const responseDTO = new ResponseDTO()
+        let status = 200
+
+        try{
+            const resonseDataDTO = await this.sessionHandler(data)
+            responseDTO.data = resonseDataDTO
+        }
+        catch (e){//прописать разные статусы
+            status = 400
+            console.log("Ошибка " + e)
+        }
+        responseDTO.status = status
+
+        const deltaTime = Date.now() - startDate
+        console.log("Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
+        return responseDTO
+    }
+
+    async sessionHandler(data: any) : Promise<ResonseDataDTO>{
         let requestDTO;
         try {
             requestDTO = new RequestDTO(data.data, data.serverHash)
         } catch (e) {
-            console.log("--->error! " + e)
-            return new ResponseDTO({}, 400, 'parse error')
+            throw "parsing error"
         }
-
-        //----------------------------------------------------------
 
         if (this.isServerHashBad(requestDTO.serverHash)) {
-            return new ResponseDTO({}, 400, 'token is bad')
+            throw "server hash bad"
         }
-
-        //----------------------------------------------------------
 
         let dataDTO
         try {
             const obj = JSON.parse(JSON.stringify(requestDTO.data))
             dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
         } catch (e) {
-            console.log("error!2 " + e)
-            return new ResponseDTO({}, 400, 'parse error')
+            throw "parsing error"
         }
 
-        //----------------------------------------------------------
+        return this.sessionLogic(dataDTO)
+    }
+
+
+    async sessionLogic(dataDTO: DataDTO) : Promise<ResonseDataDTO>{
 
         const userId = dataDTO.userId;
         const sessionHash = dataDTO.sessionHash;
         const sessionId = dataDTO.sessionId;
-
 
         if (sessionId == 0) {//выполняется при запуске/перезапуске игры
             //если сессии нет создать новую сессию
@@ -60,16 +78,13 @@ export class AppService {
 
                 if (this.isSessionCreatedRecently(sessions)){
                     // LOG кто то часто стучится
-                    return new ResponseDTO({}, 403, 'Задержка, предохраняйтесь')
+                    throw "too many requests"
                 }
                 await this.deactivateOldSession(sessions)
             }
 
             const session = await this.createSessionByUserId(userId)
-
-            const responseDataDto = new ResonseDataDTO(session.sessionHash, session.sessionId)
-
-            return new ResponseDTO(responseDataDto)
+            return new ResonseDataDTO(session.sessionHash, session.sessionId)
         }
         else{//проверка активной сессии
             //если сессия существует прислать айди сессии,  хэш
@@ -78,17 +93,16 @@ export class AppService {
             if (session){
                 if (session.sessionHash = sessionHash){
                     const updatedSession = await this.updateLastActiveDateAndHashBySession(session)
-                    const responseDataDto = new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId)
-                    return new ResponseDTO(responseDataDto)
+                    return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId)
                 }
                 else{
                     //LOG
-                    return new ResponseDTO({}, 403, 'Сессия устарела')
+                    throw "session expired"
                 }
             }
             else {
                 //LOG
-                return new ResponseDTO({}, 403, 'Сессий не найдено')
+                throw "sessions not found"
             }
         }
     }
@@ -167,17 +181,37 @@ export class AppService {
 
     //------------Перенести в другой сервис!!!------------>
 
-    async sessionValidator(data : any){
+    async sessionValidatorResponser(data: any){
+        const startDate = Date.now()
+
+        const responseDTO = new ResponseDTO()
+        let status = 200
+
+        try{
+            const resonseDataDTO = await this.sessionValidatorHandler(data)
+            responseDTO.data = resonseDataDTO
+        }
+        catch (e){//прописать разные статусы
+            status = 400
+            console.log("Ошибка " + e)
+        }
+        responseDTO.status = status
+
+        const deltaTime = Date.now() - startDate
+        console.log("Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
+        return responseDTO
+    }
+
+    async sessionValidatorHandler(data: any) : Promise<ResonseDataDTO>{
         let requestDTO;
         try {
             requestDTO = new RequestDTO(data.data, data.serverHash)
         } catch (e) {
-            console.log("--->error! " + e)
-            return new ResponseDTO({}, 400, 'parse error')
+            throw "parsing error"
         }
 
         if (this.isServerHashBad(requestDTO.serverHash)) {
-            return new ResponseDTO({}, 400, 'token is bad')
+            throw "server hash bad"
         }
 
         let dataDTO
@@ -185,17 +219,21 @@ export class AppService {
             const obj = JSON.parse(JSON.stringify(requestDTO.data))
             dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
         } catch (e) {
-            console.log("error!2 " + e)
-            return new ResponseDTO({}, 400, 'parse error')
+            throw "parsing error"
         }
+
+        return this.sessionValidatorLogic(dataDTO)
+    }
+
+    async sessionValidatorLogic(dataDTO : DataDTO) : Promise<ResonseDataDTO>{
 
         const session = await this.findActiveSessionBySessionId(dataDTO.sessionId)
 
         if (session && session.sessionHash == dataDTO.sessionHash){
-            return new ResponseDTO({}, 200, 'valid')
+            return new ResonseDataDTO(session.sessionHash, session.sessionId)
         }
         else{
-            return new ResponseDTO({}, 403, 'bad')
+            throw "bad"
         }
     }
     
