@@ -31,7 +31,7 @@ export class TaskServieService {
         }
         //log закрыта сессия открытая сутки!!!! ПОЧЕМУ?
     }
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     async movieOldSession(){
         const sessions = await this.findAllSessionByIsActiveFalse()
         await this.saveOldSessionByYongSession(sessions)
@@ -54,15 +54,15 @@ export class TaskServieService {
 
             const sessionId = session.sessionId
             const userId = session.userId
-            const startDate = session.createDateDate
-            const endDate = new Date(session.lastActive)
-            const length = startDate.valueOf() - endDate.valueOf()
+            const startDate = session.createDate
+            const endDate = session.lastActive
+            const length = startDate - endDate
             await this.createOldSession(sessionId, userId, length, startDate, endDate)
             await this.activeSessionRepo.delete(session)
         }
     }
 
-    async createOldSession(sessionId: number, userId: string, length: number, startDate: Date, endDate: Date){
+    async createOldSession(sessionId: number, userId: string, length: number, startDate: number, endDate: number){
         const session = await this.oldSessionRepo.save(
             this.oldSessionRepo.create(
                 {

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class ActiveSession {
@@ -18,8 +18,5 @@ export class ActiveSession {
     isActive: boolean
 
     @Column({type: "bigint"})
-    createDateLong: number
-
-    @CreateDateColumn()
-    createDateDate: Date
+    createDate: number
 }

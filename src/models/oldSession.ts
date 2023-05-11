@@ -11,9 +11,9 @@ export class OldSession {
     @Column({type: "bigint"})
     length: number
 
-    @Column({type:"time with time zone"})
-    startDate: Date
+    @Column({type: "bigint"})
+    startDate: number
 
-    @Column({type:"time with time zone"})
-    endDate : Date
+    @Column({type: "bigint"})
+    endDate : number
 }

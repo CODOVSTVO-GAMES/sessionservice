@@ -124,7 +124,7 @@ export class AppService {
                     userId: userId,
                     sessionHash: this.getRandomMd5Hash(),
                     isActive: true,
-                    createDateLong: Date.now(),
+                    createDate: Date.now(),
                     lastActive: Date.now(),
                 }
             )
@@ -134,7 +134,7 @@ export class AppService {
 
     isSessionCreatedRecently(sessions : Array<ActiveSession>) : boolean{
         for(let l = 0; l < sessions.length; l++ ){
-            if (Date.now() - sessions[l].createDateLong < 1000){
+            if (Date.now() - sessions[l].createDate < 1000){
                 return true
             }
         }
