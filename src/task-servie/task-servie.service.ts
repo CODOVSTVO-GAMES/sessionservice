@@ -13,7 +13,7 @@ export class TaskServieService {
         @InjectRepository(OldSession) private oldSessionRepo: Repository<OldSession>
     ){}
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     async closeSessionByOffline5min(){
         const sessions = await this.findAllSessionByLastActiveLong5minAndIsActive()
         for( let l = 0; l < sessions.length; l++ ){
@@ -31,7 +31,7 @@ export class TaskServieService {
         }
         //log закрыта сессия открытая сутки!!!! ПОЧЕМУ?
     }
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     async movieOldSession(){
         const sessions = await this.findAllSessionByIsActiveFalse()
         await this.saveOldSessionByYongSession(sessions)

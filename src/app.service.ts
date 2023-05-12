@@ -26,8 +26,19 @@ export class AppService {
             const resonseDataDTO = await this.sessionHandler(data)
             responseDTO.data = resonseDataDTO
         }
-        catch (e){//прописать разные статусы
-            status = 400
+        catch (e){
+            if (e == 'sessions not found' || e == 'session expired'){
+                status = 403//перезапуск клиента
+            }
+            else if (e == 'server hash bad' || e == 'server DTO bad'){
+                status = 401//активно сигнализировать в логи
+            }else if(e == 'too many requests'){
+                status = 429//повторить запрос позже
+            }else if (e == 'parsing data error'){
+                status = 400 //сервер не знает что делать
+            }else{
+                status = 400
+            }
             console.log("Ошибка " + e)
         }
         responseDTO.status = status
@@ -42,7 +53,7 @@ export class AppService {
         try {
             requestDTO = new RequestDTO(data.data, data.serverHash)
         } catch (e) {
-            throw "parsing error"
+            throw "server DTO bad"
         }
 
         if (this.isServerHashBad(requestDTO.serverHash)) {
@@ -54,7 +65,7 @@ export class AppService {
             const obj = JSON.parse(JSON.stringify(requestDTO.data))
             dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
         } catch (e) {
-            throw "parsing error"
+            throw "parsing data error"
         }
 
         return this.sessionLogic(dataDTO)

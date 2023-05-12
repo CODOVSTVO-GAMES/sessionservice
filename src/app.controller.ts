@@ -7,7 +7,7 @@ import { ResponseDTO } from './DTO/ResponseDTO';
 export class AppController {
     constructor(private readonly appService: AppService) { }
 
-    @EventPattern('to_session_service')
+    @EventPattern('session_updater')
     async getHello(data: any): Promise<ResponseDTO> {
         return await this.appService.sessionResponser(data)
     }
