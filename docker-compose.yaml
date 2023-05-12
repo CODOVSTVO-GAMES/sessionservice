@@ -10,7 +10,7 @@ services:
       - psqldb
     networks:
       - sessionServiceNetwork
-      - gateway_gatewayNetwork
+      - garewaynestrabbit_gatewayNetwork
   psqldb:
     image: postgres:13
     restart: always
@@ -38,6 +38,6 @@ services:
 networks:
   sessionServiceNetwork:
     driver: bridge
-  gateway_gatewayNetwork:
+  garewaynestrabbit_gatewayNetwork:
     external: true
     
