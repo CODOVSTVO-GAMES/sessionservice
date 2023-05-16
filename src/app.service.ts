@@ -17,8 +17,6 @@ export class AppService {
     ){}
 
     async sessionResponser(data: any){
-        const startDate = Date.now()
-
         const responseDTO = new ResponseDTO()
         let status = 200
 
@@ -43,8 +41,6 @@ export class AppService {
         }
         responseDTO.status = status
 
-        const deltaTime = Date.now() - startDate
-        console.log("Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
         return responseDTO
     }
 
@@ -193,8 +189,6 @@ export class AppService {
     //------------Перенести в другой сервис!!!------------>
 
     async sessionValidatorResponser(data: any){
-        const startDate = Date.now()
-
         const responseDTO = new ResponseDTO()
         let status = 200
 
@@ -208,8 +202,6 @@ export class AppService {
         }
         responseDTO.status = status
 
-        const deltaTime = Date.now() - startDate
-        console.log("Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
         return responseDTO
     }
 
@@ -239,6 +231,9 @@ export class AppService {
     async sessionValidatorLogic(dataDTO : DataDTO) : Promise<ResonseDataDTO>{
 
         const session = await this.findActiveSessionBySessionId(dataDTO.sessionId)
+
+        console.log(dataDTO)
+        console.log(session?.sessionHash)
 
         if (session && session.sessionHash == dataDTO.sessionHash){
             return new ResonseDataDTO(session.sessionHash, session.sessionId)
