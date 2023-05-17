@@ -99,18 +99,16 @@ export class AppService {
             const session = await this.findActiveSessionBySessionId(sessionId)
 
             if (session) {
-                if (session.sessionHash = sessionHash) {
+                if (session.sessionHash == sessionHash) {
                     const updatedSession = await this.updateLastActiveDateAndHashBySession(session)
                     return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId)
                 }
                 else {
                     //LOG
-                    console.log("session expired")
                     throw "session expired"
                 }
             }
             else {
-                console.log("sessions not found")
                 //LOG
                 throw "sessions not found"
             }
