@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { ActiveSession } from './models/activeSession';
 import { ResonseDataDTO } from './DTO/ResponseDataDTO';
 import * as crypto from 'crypto';
-import { RabbitService } from './rabbit/rabbit.service';
 
 
 @Injectable()
@@ -15,7 +14,6 @@ export class AppService {
     
     constructor(
         @InjectRepository(ActiveSession) private activeSessionRepo: Repository<ActiveSession>,
-        private readonly rabbitService: RabbitService
     ){}
 
     async sessionResponser(data: any){
@@ -162,6 +160,7 @@ export class AppService {
     }
 
     async findActiveSessionBySessionId(sessionId : number) {
+        console.log("sessionid: " + sessionId)
         const session = await this.activeSessionRepo.findOne(
             {
                 where: {
@@ -241,7 +240,6 @@ export class AppService {
             return new ResonseDataDTO(session.sessionHash, session.sessionId)
         }
         else{
-            this.rabbitService.sendLog('session-service', 'validator', 400, 'bad', JSON.stringify(dataDTO) + '---' + JSON.stringify(session?.sessionHash))
             throw "bad"
         }
     }
