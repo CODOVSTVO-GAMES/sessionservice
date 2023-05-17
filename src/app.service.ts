@@ -160,7 +160,6 @@ export class AppService {
     }
 
     async findActiveSessionBySessionId(sessionId : number) {
-        console.log("sessionid: " + sessionId)
         const session = await this.activeSessionRepo.findOne(
             {
                 where: {
@@ -207,6 +206,7 @@ export class AppService {
     }
 
     async sessionValidatorHandler(data: any) : Promise<ResonseDataDTO>{
+        console.log(data)
         let requestDTO;
         try {
             requestDTO = new RequestDTO(data.data, data.serverHash)
@@ -221,6 +221,7 @@ export class AppService {
         let dataDTO
         try {
             const obj = JSON.parse(JSON.stringify(requestDTO.data))
+            console.log(obj)
             dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
         } catch (e) {
             throw "parsing error"
