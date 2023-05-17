@@ -1,9 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Global, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { timeout } from 'rxjs';
 import { MonitoringDTO } from 'src/DTO/MonitoringDTO';
 import { RequestServiceDTO } from 'src/DTO/RequestServiceDTO';
 
+@Global()
 @Injectable()
 export class RabbitService {
     constructor(@Inject('monitoring-module') private readonly monitoringClient: ClientProxy) { }

@@ -15,7 +15,6 @@ import { RabbitService } from './rabbit.service';
             },
         ]),
     ],
-    controllers: [],
     providers: [RabbitService],
     exports: [RabbitService]
 })
