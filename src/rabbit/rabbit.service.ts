@@ -15,7 +15,7 @@ export class RabbitService {
 
     private async questionerMonitoring(data: RequestServiceDTO, queue: string) {
         try {
-            await this.monitoringClient.send(queue, data).pipe(timeout(10000)).toPromise()
+            this.monitoringClient.send(queue, data).pipe(timeout(10000))
         } catch (e) {
             if (e.message == 'Timeout has occurred') {
                 throw "timeout"
