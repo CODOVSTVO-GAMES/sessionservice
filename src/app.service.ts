@@ -11,30 +11,30 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AppService {
-    
+
     constructor(
         @InjectRepository(ActiveSession) private activeSessionRepo: Repository<ActiveSession>,
-    ){}
+    ) { }
 
-    async sessionResponser(data: any){
+    async sessionResponser(data: any) {
         const responseDTO = new ResponseDTO()
         let status = 200
 
-        try{
+        try {
             const resonseDataDTO = await this.sessionHandler(data)
             responseDTO.data = resonseDataDTO
         }
-        catch (e){
-            if (e == 'sessions not found' || e == 'session expired'){
+        catch (e) {
+            if (e == 'sessions not found' || e == 'session expired') {
                 status = 403//перезапуск клиента
             }
-            else if (e == 'server hash bad' || e == 'server DTO bad'){
+            else if (e == 'server hash bad' || e == 'server DTO bad') {
                 status = 401//активно сигнализировать в логи
-            }else if(e == 'too many requests'){
+            } else if (e == 'too many requests') {
                 status = 429//повторить запрос позже
-            }else if (e == 'parsing data error'){
+            } else if (e == 'parsing data error') {
                 status = 400 //сервер не знает что делать
-            }else{
+            } else {
                 status = 400
             }
             console.log("Ошибка " + e)
@@ -44,11 +44,12 @@ export class AppService {
         return responseDTO
     }
 
-    async sessionHandler(data: any) : Promise<ResonseDataDTO>{
+    async sessionHandler(data: any): Promise<ResonseDataDTO> {
         let requestDTO;
         try {
             requestDTO = new RequestDTO(data.data, data.serverHash)
         } catch (e) {
+            console.log("server DTO bad")
             throw "server DTO bad"
         }
 
@@ -68,7 +69,7 @@ export class AppService {
     }
 
 
-    async sessionLogic(dataDTO: DataDTO) : Promise<ResonseDataDTO>{
+    async sessionLogic(dataDTO: DataDTO): Promise<ResonseDataDTO> {
 
         const userId = dataDTO.userId;
         const sessionHash = dataDTO.sessionHash;
@@ -80,10 +81,10 @@ export class AppService {
 
             const sessions = await this.findAllSessionByUserId(userId)
 
-            if (sessions.length > 0){
+            if (sessions.length > 0) {
                 //LOG у пользователя больше 1 сессии
 
-                if (this.isSessionCreatedRecently(sessions)){
+                if (this.isSessionCreatedRecently(sessions)) {
                     // LOG кто то часто стучится
                     throw "too many requests"
                 }
@@ -93,28 +94,30 @@ export class AppService {
             const session = await this.createSessionByUserId(userId)
             return new ResonseDataDTO(session.sessionHash, session.sessionId)
         }
-        else{//проверка активной сессии
+        else {//проверка активной сессии
             //если сессия существует прислать айди сессии,  хэш
             const session = await this.findActiveSessionBySessionId(sessionId)
 
-            if (session){
-                if (session.sessionHash = sessionHash){
+            if (session) {
+                if (session.sessionHash = sessionHash) {
                     const updatedSession = await this.updateLastActiveDateAndHashBySession(session)
                     return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId)
                 }
-                else{
+                else {
                     //LOG
+                    console.log("session expired")
                     throw "session expired"
                 }
             }
             else {
+                console.log("sessions not found")
                 //LOG
                 throw "sessions not found"
             }
         }
     }
 
-    async findAllSessionByUserId(userId : string) {
+    async findAllSessionByUserId(userId: string) {
         return this.activeSessionRepo.find(
             {
                 where: {
@@ -124,7 +127,7 @@ export class AppService {
         )
     }
 
-    async createSessionByUserId(userId: string){
+    async createSessionByUserId(userId: string) {
         const session = this.activeSessionRepo.save(
             this.activeSessionRepo.create(
                 {
@@ -139,16 +142,16 @@ export class AppService {
         return session
     }
 
-    isSessionCreatedRecently(sessions : Array<ActiveSession>) : boolean{
-        for(let l = 0; l < sessions.length; l++ ){
-            if (Date.now() - sessions[l].createDate < 1000){
+    isSessionCreatedRecently(sessions: Array<ActiveSession>): boolean {
+        for (let l = 0; l < sessions.length; l++) {
+            if (Date.now() - sessions[l].createDate < 1000) {
                 return true
             }
         }
         return false
     }
 
-    async deactivateOldSession(sessions : Array<ActiveSession>){
+    async deactivateOldSession(sessions: Array<ActiveSession>) {
         sessions.forEach(async element => {
             element.isActive = false
             await this.activeSessionRepo.save(element)
@@ -159,7 +162,7 @@ export class AppService {
         return crypto.createHash('md5').update(Math.random().toString()).digest('hex')
     }
 
-    async findActiveSessionBySessionId(sessionId : number) {
+    async findActiveSessionBySessionId(sessionId: number) {
         const session = await this.activeSessionRepo.findOne(
             {
                 where: {
@@ -168,18 +171,27 @@ export class AppService {
                 }
             }
         )
+        if(session){
+            await this.updateLastActiveDateBySession(session)
+        }
         return session
     }
 
-    async updateLastActiveDateAndHashBySession(session: ActiveSession) : Promise<ActiveSession> {
-        session.lastActive = Date.now()
+    async updateLastActiveDateAndHashBySession(session: ActiveSession): Promise<ActiveSession> {
         session.sessionHash = this.getRandomMd5Hash()
+        session = await this.updateLastActiveDateBySession(session)
         await this.activeSessionRepo.save(session)
         return session
     }
 
-    isServerHashBad(serverHash: string) : boolean{
-        if (serverHash == '89969458273-the-main-prize-in-the-show-psychics'){
+    async updateLastActiveDateBySession(session: ActiveSession): Promise<ActiveSession> {
+        session.lastActive = Date.now()
+        await this.activeSessionRepo.save(session)
+        return session
+    }
+
+    isServerHashBad(serverHash: string): boolean {
+        if (serverHash == '89969458273-the-main-prize-in-the-show-psychics') {
             return false
         }
         return true
@@ -188,15 +200,15 @@ export class AppService {
 
     //------------Перенести в другой сервис!!!------------>
 
-    async sessionValidatorResponser(data: any){
+    async sessionValidatorResponser(data: any) {
         const responseDTO = new ResponseDTO()
         let status = 200
 
-        try{
+        try {
             const resonseDataDTO = await this.sessionValidatorHandler(data)
             responseDTO.data = resonseDataDTO
         }
-        catch (e){
+        catch (e) {
             status = 400
             console.log("Ошибка " + e)
         }
@@ -205,7 +217,7 @@ export class AppService {
         return responseDTO
     }
 
-    async sessionValidatorHandler(data: any) : Promise<ResonseDataDTO>{
+    async sessionValidatorHandler(data: any): Promise<ResonseDataDTO> {
         console.log(data)
         let requestDTO;
         try {
@@ -230,21 +242,21 @@ export class AppService {
         return this.sessionValidatorLogic(dataDTO)
     }
 
-    async sessionValidatorLogic(dataDTO : DataDTO) : Promise<ResonseDataDTO>{
+    async sessionValidatorLogic(dataDTO: DataDTO): Promise<ResonseDataDTO> {
 
         const session = await this.findActiveSessionBySessionId(dataDTO.sessionId)
 
         console.log(dataDTO)
         console.log(session?.sessionHash)
 
-        if (session && session.sessionHash == dataDTO.sessionHash){
+        if (session && session.sessionHash == dataDTO.sessionHash) {
             return new ResonseDataDTO(session.sessionHash, session.sessionId)
         }
-        else{
+        else {
             throw "bad"
         }
     }
-    
+
 }
 
 
