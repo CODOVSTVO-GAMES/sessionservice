@@ -60,7 +60,7 @@ export class AppService {
         let dataDTO
         try {
             const obj = JSON.parse(JSON.stringify(requestDTO.data))
-            dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
+            dataDTO = new DataDTO(obj.accountId, obj.sessionHash, obj.sessionId)
         } catch (e) {
             throw "parsing data error"
         }
@@ -71,7 +71,7 @@ export class AppService {
 
     async sessionLogic(dataDTO: DataDTO): Promise<ResonseDataDTO> {
 
-        const userId = dataDTO.userId;
+        const accountId = dataDTO.accountId;
         const sessionHash = dataDTO.sessionHash;
         const sessionId = dataDTO.sessionId;
 
@@ -79,7 +79,7 @@ export class AppService {
             //если сессии нет создать новую сессию
             //если сессия существует закрыть старые создать новую
 
-            const sessions = await this.findAllSessionByUserId(userId)
+            const sessions = await this.findAllSessionByAccountId(accountId)
 
             if (sessions.length > 0) {
                 //LOG у пользователя больше 1 сессии
@@ -91,7 +91,7 @@ export class AppService {
                 await this.deactivateOldSession(sessions)
             }
 
-            const session = await this.createSessionByUserId(userId)
+            const session = await this.createSessionByAccountId(accountId)
             return new ResonseDataDTO(session.sessionHash, session.sessionId)
         }
         else {//проверка активной сессии
@@ -115,21 +115,21 @@ export class AppService {
         }
     }
 
-    async findAllSessionByUserId(userId: string) {
+    async findAllSessionByAccountId(accountId: string) {
         return this.activeSessionRepo.find(
             {
                 where: {
-                    userId: userId
+                    accountId: accountId
                 }
             }
         )
     }
 
-    async createSessionByUserId(userId: string) {
+    async createSessionByAccountId(accountId: string) {
         const session = this.activeSessionRepo.save(
             this.activeSessionRepo.create(
                 {
-                    userId: userId,
+                    accountId: accountId,
                     sessionHash: this.getRandomMd5Hash(),
                     isActive: true,
                     createDate: Date.now(),
@@ -232,7 +232,7 @@ export class AppService {
         try {
             const obj = JSON.parse(JSON.stringify(requestDTO.data))
             console.log(obj)
-            dataDTO = new DataDTO(obj.userId, obj.sessionHash, obj.sessionId)
+            dataDTO = new DataDTO(obj.accountId, obj.sessionHash, obj.sessionId)
         } catch (e) {
             throw "parsing error"
         }

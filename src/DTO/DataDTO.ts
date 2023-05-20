@@ -1,9 +1,9 @@
 export class DataDTO {
-    userId: string;
+    accountId: string;
     sessionHash: string;
     sessionId: number;
-    constructor(userId: string, sessionHash: string, sessionId: number) {
-        this.userId = userId
+    constructor(accountId: string, sessionHash: string, sessionId: number) {
+        this.accountId = accountId
         this.sessionHash = sessionHash
         this.sessionId = sessionId
     }

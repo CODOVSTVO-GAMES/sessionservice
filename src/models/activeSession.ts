@@ -6,7 +6,7 @@ export class ActiveSession {
     sessionId: number;
 
     @Column()
-    userId: string
+    accountId: string
 
     @Column()
     sessionHash: string

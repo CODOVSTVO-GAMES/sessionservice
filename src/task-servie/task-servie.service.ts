@@ -53,21 +53,21 @@ export class TaskServieService {
             const session = sessions[l]
 
             const sessionId = session.sessionId
-            const userId = session.userId
+            const accountId = session.accountId
             const startDate = session.createDate
             const endDate = session.lastActive
             const length = startDate - endDate
-            await this.createOldSession(sessionId, userId, length, startDate, endDate)
+            await this.createOldSession(sessionId, accountId, length, startDate, endDate)
             await this.activeSessionRepo.delete(session)
         }
     }
 
-    async createOldSession(sessionId: number, userId: string, length: number, startDate: number, endDate: number){
+    async createOldSession(sessionId: number, accountId: string, length: number, startDate: number, endDate: number){
         const session = await this.oldSessionRepo.save(
             this.oldSessionRepo.create(
                 {
                     sessionId: sessionId,
-                    userId: userId,
+                    accountId: accountId,
                     length: length,
                     startDate: startDate,
                     endDate: endDate

@@ -6,7 +6,7 @@ export class OldSession {
     sessionId: number;
 
     @Column()
-    userId: string
+    accountId: string
 
     @Column({type: "bigint"})
     length: number
