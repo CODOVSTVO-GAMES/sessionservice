@@ -92,7 +92,7 @@ export class AppService {
             }
 
             const session = await this.createSessionByAccountId(accountId)
-            return new ResonseDataDTO(session.sessionHash, session.sessionId)
+            return new ResonseDataDTO(session.sessionHash, session.sessionId, Date.now())
         }
         else {//проверка активной сессии
             //если сессия существует прислать айди сессии,  хэш
@@ -101,7 +101,7 @@ export class AppService {
             if (session) {
                 if (session.sessionHash == sessionHash) {
                     const updatedSession = await this.updateLastActiveDateAndHashBySession(session)
-                    return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId)
+                    return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId, Date.now())
                 }
                 else {
                     //LOG
@@ -169,7 +169,7 @@ export class AppService {
                 }
             }
         )
-        if(session){
+        if (session) {
             await this.updateLastActiveDateBySession(session)
         }
         return session
@@ -248,7 +248,7 @@ export class AppService {
         console.log(session?.sessionHash)
 
         if (session && session.sessionHash == dataDTO.sessionHash) {
-            return new ResonseDataDTO(session.sessionHash, session.sessionId)
+            return new ResonseDataDTO(session.sessionHash, session.sessionId, Date.now())
         }
         else {
             throw "bad"
