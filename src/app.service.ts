@@ -101,7 +101,7 @@ export class AppService {
             if (session) {
                 if (session.sessionHash == sessionHash) {
                     const updatedSession = await this.updateLastActiveDateAndHashBySession(session)
-                    return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId, Date.now())
+                    return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId, updatedSession.lastActive)
                 }
                 else {
                     //LOG
@@ -244,11 +244,9 @@ export class AppService {
 
         const session = await this.findActiveSessionBySessionId(dataDTO.sessionId)
 
-        console.log(dataDTO)
-        console.log(session?.sessionHash)
-
         if (session && session.sessionHash == dataDTO.sessionHash) {
-            return new ResonseDataDTO(session.sessionHash, session.sessionId, Date.now())
+            this.updateLastActiveDateBySession(session)
+            return new ResonseDataDTO(session.sessionHash, session.sessionId, session.lastActive)
         }
         else {
             throw "bad"
