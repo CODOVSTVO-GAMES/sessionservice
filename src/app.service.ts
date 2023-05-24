@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { RequestDTO } from './DTO/RequestDTO';
 import { ResponseDTO } from './DTO/ResponseDTO';
 import { DataDTO } from './DTO/DataDTO';
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { ActiveSession } from './models/activeSession';
 import { ResonseDataDTO } from './DTO/ResponseDataDTO';
 import * as crypto from 'crypto';
+import { LoggerService } from './logger/logger.service';
 
 
 @Injectable()
@@ -16,9 +17,13 @@ export class AppService {
         @InjectRepository(ActiveSession) private activeSessionRepo: Repository<ActiveSession>,
     ) { }
 
+    @Inject(LoggerService)
+    private readonly loggerService: LoggerService
+
     async sessionResponser(data: any) {
         const responseDTO = new ResponseDTO()
         let status = 200
+        this.loggerService.sendLog("Hello", "sds", 2222222, 'msg', 'sds')
 
         try {
             const resonseDataDTO = await this.sessionHandler(data)
@@ -216,7 +221,6 @@ export class AppService {
     }
 
     async sessionValidatorHandler(data: any): Promise<ResonseDataDTO> {
-        console.log(data)
         let requestDTO;
         try {
             requestDTO = new RequestDTO(data.data, data.serverHash)
@@ -231,7 +235,6 @@ export class AppService {
         let dataDTO
         try {
             const obj = JSON.parse(JSON.stringify(requestDTO.data))
-            console.log(obj)
             dataDTO = new DataDTO(obj.accountId, obj.sessionHash, obj.sessionId)
         } catch (e) {
             throw "parsing error"
