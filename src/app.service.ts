@@ -49,8 +49,7 @@ export class AppService {
     async sessionHandler(data: any): Promise<ResonseDataDTO> {
         let dataDTO
         try {
-            const obj = JSON.parse(data)
-            dataDTO = new DataDTO(obj.accountId, obj.sessionHash, obj.sessionId)
+            dataDTO = new DataDTO(data.accountId, data.sessionHash, data.sessionId)
         } catch (e) {
             throw "parsing data error"
         }
@@ -200,8 +199,7 @@ export class AppService {
     async sessionValidatorHandler(data: any): Promise<ResonseDataDTO> {
         let dataDTO
         try {
-            const obj = JSON.parse(data)
-            dataDTO = new DataDTO(obj.accountId, obj.sessionHash, obj.sessionId)
+            dataDTO = new DataDTO(data.accountId, data.sessionHash, data.sessionId)
         } catch (e) {
             throw "parsing error"
         }
