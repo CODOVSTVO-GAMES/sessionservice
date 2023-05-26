@@ -1,5 +1,4 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { RequestDTO } from './DTO/RequestDTO';
 import { ResponseDTO } from './DTO/ResponseDTO';
 import { DataDTO } from './DTO/DataDTO';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,7 +32,7 @@ export class AppService {
             if (e == 'sessions not found' || e == 'session expired') {
                 status = 403//перезапуск клиента
             }
-            else if (e == 'server hash bad' || e == 'server DTO bad') {
+            else if (e == 'server DTO bad') {
                 status = 401//активно сигнализировать в логи
             } else if (e == 'too many requests') {
                 status = 429//повторить запрос позже
@@ -50,21 +49,9 @@ export class AppService {
     }
 
     async sessionHandler(data: any): Promise<ResonseDataDTO> {
-        let requestDTO;
-        try {
-            requestDTO = new RequestDTO(data.data, data.serverHash)
-        } catch (e) {
-            console.log("server DTO bad")
-            throw "server DTO bad"
-        }
-
-        if (this.isServerHashBad(requestDTO.serverHash)) {
-            throw "server hash bad"
-        }
-
         let dataDTO
         try {
-            const obj = JSON.parse(JSON.stringify(requestDTO.data))
+            const obj = JSON.parse(JSON.stringify(data))
             dataDTO = new DataDTO(obj.accountId, obj.sessionHash, obj.sessionId)
         } catch (e) {
             throw "parsing data error"
@@ -193,14 +180,6 @@ export class AppService {
         return session
     }
 
-    isServerHashBad(serverHash: string): boolean {
-        if (serverHash == '89969458273-the-main-prize-in-the-show-psychics') {
-            return false
-        }
-        return true
-    }
-
-
     //------------Перенести в другой сервис!!!------------>
 
     async sessionValidatorResponser(data: any) {
@@ -221,20 +200,9 @@ export class AppService {
     }
 
     async sessionValidatorHandler(data: any): Promise<ResonseDataDTO> {
-        let requestDTO;
-        try {
-            requestDTO = new RequestDTO(data.data, data.serverHash)
-        } catch (e) {
-            throw "parsing error"
-        }
-
-        if (this.isServerHashBad(requestDTO.serverHash)) {
-            throw "server hash bad"
-        }
-
         let dataDTO
         try {
-            const obj = JSON.parse(JSON.stringify(requestDTO.data))
+            const obj = JSON.parse(JSON.stringify(data))
             dataDTO = new DataDTO(obj.accountId, obj.sessionHash, obj.sessionId)
         } catch (e) {
             throw "parsing error"

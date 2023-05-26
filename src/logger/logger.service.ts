@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { RequestServiceDTO } from 'src/DTO/RequestServiceDTO';
 import { MonitoringDTO } from './MonitoringDTO';
 
 @Injectable()
@@ -9,10 +8,10 @@ export class LoggerService {
 
     sendLog(service: string, requestName: string, status: number, msg: string, data: string, time = 0) {
         const monitoringDTO = new MonitoringDTO(service, requestName, status, msg, data, time)
-        this.questionerMonitoring(new RequestServiceDTO(monitoringDTO))
+        this.questionerMonitoring(monitoringDTO)
     }
 
-    private async questionerMonitoring(data: RequestServiceDTO) {
+    private async questionerMonitoring(data: object) {
         try {
             await this.monitoringClient.emit('send_log', data).toPromise()
         } catch (e) {
