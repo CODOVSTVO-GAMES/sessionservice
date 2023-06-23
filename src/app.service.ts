@@ -22,7 +22,6 @@ export class AppService {
     async sessionResponser(data: any) {
         const responseDTO = new ResponseDTO()
         let status = 200
-        this.loggerService.sendLog("Hello", "sds", 2222222, 'msg', 'sds')
 
         try {
             const resonseDataDTO = await this.sessionHandler(data)
