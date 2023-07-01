@@ -24,8 +24,8 @@ export class AppService {
         let status = 200
 
         try {
-            const resonseDataDTO = await this.sessionHandler(data)
-            responseDTO.data = resonseDataDTO
+            const dataDTO = new DataDTO(data.accountId, data.sessionHash, data.sessionId)
+            responseDTO.data = await this.sessionLogic(dataDTO)
         }
         catch (e) {
             if (e == 'sessions not found' || e == 'session expired') {
@@ -44,18 +44,6 @@ export class AppService {
 
         return responseDTO
     }
-
-    async sessionHandler(data: any): Promise<ResonseDataDTO> {
-        let dataDTO
-        try {
-            dataDTO = new DataDTO(data.accountId, data.sessionHash, data.sessionId)
-        } catch (e) {
-            throw "parsing data error"
-        }
-
-        return this.sessionLogic(dataDTO)
-    }
-
 
     async sessionLogic(dataDTO: DataDTO): Promise<ResonseDataDTO> {
 
@@ -183,7 +171,8 @@ export class AppService {
         let status = 200
 
         try {
-            const resonseDataDTO = await this.sessionValidatorHandler(data)
+            const dataDTO = new DataDTO(data.accountId, data.sessionHash, data.sessionId)
+            const resonseDataDTO = await this.sessionValidatorLogic(dataDTO)
             responseDTO.data = resonseDataDTO
         }
         catch (e) {
@@ -193,17 +182,6 @@ export class AppService {
         responseDTO.status = status
 
         return responseDTO
-    }
-
-    async sessionValidatorHandler(data: any): Promise<ResonseDataDTO> {
-        let dataDTO
-        try {
-            dataDTO = new DataDTO(data.accountId, data.sessionHash, data.sessionId)
-        } catch (e) {
-            throw "parsing error"
-        }
-
-        return this.sessionValidatorLogic(dataDTO)
     }
 
     async sessionValidatorLogic(dataDTO: DataDTO): Promise<ResonseDataDTO> {
