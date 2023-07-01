@@ -185,14 +185,14 @@ export class AppService {
     }
 
     async sessionValidatorLogic(dataDTO: DataDTO): Promise<ResonseDataDTO> {
-
         const session = await this.findActiveSessionBySessionId(dataDTO.sessionId)
-
         if (session && session.sessionHash == dataDTO.sessionHash) {
             this.updateLastActiveDateBySession(session)
             return new ResonseDataDTO(session.sessionHash, session.sessionId, session.lastActive)
         }
         else {
+            console.log(session?.sessionHash)
+            console.log(dataDTO.sessionHash)
             throw "bad"
         }
     }
