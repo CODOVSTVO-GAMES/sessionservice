@@ -77,6 +77,7 @@ export class AppService {
             if (session) {
                 if (session.sessionHash == sessionHash) {
                     const updatedSession = await this.updateLastActiveDateAndHashBySession(session)
+                    console.log('сессия обновлена')
                     return new ResonseDataDTO(updatedSession.sessionHash, updatedSession.sessionId, updatedSession.lastActive)
                 }
                 else {
@@ -154,7 +155,7 @@ export class AppService {
     async updateLastActiveDateAndHashBySession(session: ActiveSession): Promise<ActiveSession> {
         session.sessionHash = this.getRandomMd5Hash()
         session = await this.updateLastActiveDateBySession(session)
-        await this.activeSessionRepo.save(session)
+        this.activeSessionRepo.save(session)
         return session
     }
 
@@ -193,6 +194,7 @@ export class AppService {
         else {
             console.log(session?.sessionHash)
             console.log(dataDTO.sessionHash)
+            //переписать сессии по другому
             throw "bad"
         }
     }
